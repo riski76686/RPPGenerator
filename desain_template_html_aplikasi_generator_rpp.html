@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Generator RPP — Template</title>
+  <style>
+    :root{--bg:#f7fafc;--card:#ffffff;--muted:#6b7280;--accent:#0f172a}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;margin:0;background:var(--bg);color:var(--accent)}
+    .container{max-width:980px;margin:28px auto;padding:20px}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:20px}
+    .card{background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(15,23,42,0.06);padding:18px}
+    h1{margin:0 0 6px;font-size:20px}
+    label{display:block;font-weight:600;margin-top:12px}
+    input,select,textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid #e6edf3;margin-top:6px;font-size:14px}
+    textarea{min-height:72px;resize:vertical}
+    .muted{color:var(--muted);font-size:13px}
+    .btn{display:inline-block;padding:10px 14px;border-radius:10px;border:0;background:#0b5cff;color:white;cursor:pointer;margin-top:12px}
+    .small{font-size:13px;padding:8px 10px}
+    .rpp-output{overflow:auto}
+    .rpp{background:white;border-radius:8px;padding:18px;margin-bottom:12px}
+    .meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+    .tag{background:#eef2ff;padding:6px 10px;border-radius:8px;font-size:13px}
+    .actions{display:flex;gap:8px;align-items:center}
+    .list-row{display:flex;gap:8px;align-items:center}
+    .add-btn{background:#f3f4f6;border-radius:8px;padding:6px 8px;border:1px dashed #cbd5e1}
+    @media (max-width:880px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1>Desain Aplikasi: Generator RPP (Rencana Pelaksanaan Pembelajaran)</h1>
+      <p class="muted">Satu file HTML yang berisi form input data guru dan tombol untuk menghasilkan RPP berbasis Perencanaan Pembelajaran Mendalam (PPM).</p>
+    </div>
+
+    <div class="grid">
+      <!-- Form kiri -->
+      <div class="card">
+        <h2>Form Input RPP</h2>
+        <form id="rppForm">
+          <label>Nama Guru
+            <input id="teacherName" placeholder="contoh: Budi Santoso" required />
+          </label>
+
+          <label>Mata Pelajaran
+            <input id="subject" placeholder="contoh: Matematika" required />
+          </label>
+
+          <label>Kelas / Semester
+            <input id="class" placeholder="contoh: 6 / Semester 1" required />
+          </label>
+
+          <label>Alokasi Waktu
+            <input id="time" placeholder="contoh: 2 x 40 menit" />
+          </label>
+
+          <label>Tujuan Pembelajaran (bullet / pisahkan enter)
+            <textarea id="objectives" placeholder="Tulis tujuan pembelajaran..." required></textarea>
+          </label>
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          
+
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+            <button type="button" class="btn" id="generateBtn">Generate RPP</button>
+            <button type="button" class="small add-btn" id="clearBtn">Kosongkan Form</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Preview kanan -->
+      <div class="card">
+        <h2>Preview RPP</h2>
+        <div class="actions">
+          <button class="btn" id="printBtn">Print / Save PDF</button>
+          <button class="small" id="copyBtn">Salin ke Clipboard</button>
+        </div>
+
+        <div class="rpp-output" id="rppOutput" aria-live="polite" style="margin-top:12px">
+          <div class="muted">Belum ada RPP yang digenerate. Isi form lalu klik "Generate RPP".</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top:18px">
+      <h2>Catatan Desain & Ekstensi</h2>
+      <ul>
+        <li class="muted">Data model sederhana (JSON) untuk tiap RPP — memudahkan simpan ke server / localStorage.</li>
+        <li class="muted">Fitur lanjut: simpan template, multiple meetings, import/export JSON, integrasi LMS, dan multi-language (ID/EN).</li>
+        <li class="muted">Aksesibilitas: beri label, tabindex, ukuran font yang dapat diubah.</li>
+        <li class="muted">Keamanan: jika simpan di server, autentikasi guru diperlukan dan sanitasi input untuk XSS.</li>
+      </ul>
+    </div>
+
+  </div>
+
+<script>
+// Simple RPP generator logic
+function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,function(m){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]});}
+
+function buildRPP(data){
+  // create HTML template for printable RPP
+  const objectives = data.objectives.split('\n').filter(Boolean).map(s=>'<li>'+escapeHtml(s)+'</li>').join('');
+  const indicators = data.indicators.split('\n').filter(Boolean).map(s=>'<li>'+escapeHtml(s)+'</li>').join('');
+  const activities = data.activities.split('\n').filter(Boolean).map(s=>'<p>'+escapeHtml(s)+'</p>').join('');
+
+  return `
+  <div class="rpp">
+    <h2>RPP — ${escapeHtml(data.subject)} (Kelas: ${escapeHtml(data.class)})</h2>
+    <div class="meta">
+      <div class="tag">Guru: ${escapeHtml(data.teacherName)}</div>
+      <div class="tag">Alokasi Waktu: ${escapeHtml(data.time)}</div>
+      <div class="tag">Sumber: ${escapeHtml(data.resources)}</div>
+    </div>
+
+    <h3>Tujuan Pembelajaran</h3>
+    <ul>${objectives || '<li><span class="muted">(belum diisi)</span></li>'}</ul>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <div style="margin-top:12px;font-size:13px;color:#475569">(Template ini mendukung penyesuaian: tambahkan rubrik, indikator HOTS, dan refleksi siswa di bagian Langkah Pembelajaran.)</div>
+  </div>
+  `;
+}
+
+// DOM
+const form = document.getElementById('rppForm');
+const output = document.getElementById('rppOutput');
+const genBtn = document.getElementById('generateBtn');
+const printBtn = document.getElementById('printBtn');
+const copyBtn = document.getElementById('copyBtn');
+const clearBtn = document.getElementById('clearBtn');
+
+function readForm(){
+  return {
+    teacherName: document.getElementById('teacherName').value,
+    subject: document.getElementById('subject').value,
+    class: document.getElementById('class').value,
+    time: document.getElementById('time').value,
+    objectives: document.getElementById('objectives').value,
+    indicators: document.getElementById('indicators').value,
+    materials: document.getElementById('materials').value,
+    activities: document.getElementById('activities').value,
+    differentiation: document.getElementById('differentiation').value,
+    assessment: document.getElementById('assessment').value,
+    resources: document.getElementById('resources').value
+  };
+}
+
+function renderRPP(){
+  const data = readForm();
+  const html = buildRPP(data);
+  output.innerHTML = html;
+}
+
+genBtn.addEventListener('click', ()=>{
+  renderRPP();
+});
+
+printBtn.addEventListener('click', ()=>{
+  // open print window with content
+  const data = readForm();
+  const printWin = window.open('','_blank','width=900,height=700');
+  printWin.document.write('<html><head><title>RPP - Print</title>');
+  printWin.document.write('<style>body{font-family:sans-serif;padding:24px} h2{margin-bottom:6px} ul{margin-top:6px}</style>');
+  printWin.document.write('</head><body>');
+  printWin.document.write(buildRPP(data));
+  printWin.document.write('</body></html>');
+  printWin.document.close();
+  setTimeout(()=>printWin.print(),300);
+});
+
+copyBtn.addEventListener('click', ()=>{
+  const html = output.innerHTML;
+  navigator.clipboard.writeText(html).then(()=>alert('RPP telah disalin ke clipboard (format HTML).'))
+    .catch(()=>alert('Gagal menyalin; coba seleksi manual.'));
+});
+
+clearBtn.addEventListener('click', ()=>{form.reset(); output.innerHTML='<div class="muted">Belum ada RPP yang digenerate. Isi form lalu klik "Generate RPP".</div>'});
+
+// Option: restore from localStorage
+if(window.localStorage){
+  const saved = localStorage.getItem('rppDraft');
+  if(saved){
+    try{const s=JSON.parse(saved);Object.keys(s).forEach(k=>{if(document.getElementById(k))document.getElementById(k).value=s[k]})}catch(e){}
+  }
+  // autosave
+  setInterval(()=>{
+    const data=readForm(); localStorage.setItem('rppDraft',JSON.stringify(data));
+  },2000);
+}
+</script>
+</body>
+</html>
